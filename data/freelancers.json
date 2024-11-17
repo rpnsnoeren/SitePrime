@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1731849832807,
+    "fullName": "test ",
+    "email": "tes@test.nl",
+    "phone": "0657604545",
+    "portfolioUrl": "https://nos.nl",
+    "expertise": [
+      "Frontend Development"
+    ],
+    "yearsExperience": "0-2",
+    "weeklyAvailability": "16-24",
+    "rateRange": "30-50",
+    "createdAt": "2024-11-17T13:23:52.807Z",
+    "status": "nieuw"
+  },
+  {
+    "id": 1731851170233,
+    "fullName": "test",
+    "email": "test@test.nl",
+    "phone": "0657604545",
+    "portfolioUrl": "https://modus.com",
+    "expertise": [
+      "Full Stack Development"
+    ],
+    "yearsExperience": "2-5",
+    "weeklyAvailability": "8-16",
+    "rateRange": "30-50",
+    "createdAt": "2024-11-17T13:46:10.233Z",
+    "status": "nieuw"
+  }
+]
