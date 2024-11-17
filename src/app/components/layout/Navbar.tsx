@@ -1,16 +1,17 @@
 'use client'
-import React from 'react'
-import type { FC } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const Navbar: FC = () => {
+const Navbar = () => {
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      setIsMobileMenuOpen(false) // Sluit menu na klikken
     }
   }
 
@@ -60,24 +61,17 @@ const Navbar: FC = () => {
             </div>
           )}
 
-          {/* CTA Button - Alleen tonen op homepage */}
-          {isHomePage && (
-            <div className="hidden md:block">
-              <button 
-                onClick={() => scrollToSection('services')}
-                className="bg-[#FF6B35] text-white px-4 py-2 rounded-lg hover:bg-[#ff8555] transition-colors"
-              >
-                Start Nu
-              </button>
-            </div>
-          )}
-
-          {/* Mobile menu button - Alleen tonen op homepage */}
+          {/* Hamburger Menu Button */}
           {isHomePage && (
             <div className="md:hidden">
-              <button className="text-white hover:text-[#FFB400] transition-colors">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
+              >
+                <span className="sr-only">Open menu</span>
                 <svg
                   className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -86,7 +80,7 @@ const Navbar: FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
+                    d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
                   />
                 </svg>
               </button>
@@ -94,25 +88,34 @@ const Navbar: FC = () => {
           )}
         </div>
 
-        {/* Mobile Navigation Menu (hidden by default) - Alleen tonen op homepage */}
-        {isHomePage && (
-          <div className="hidden md:hidden">
+        {/* Mobile Menu */}
+        {isHomePage && isMobileMenuOpen && (
+          <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="block text-white hover:text-[#FFB400] transition-colors py-2 w-full text-left"
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                  setIsMobileMenuOpen(false)
+                }}
+                className="block w-full text-left px-3 py-2 text-white hover:bg-[#FFB400]/10 rounded-md"
               >
                 Home
               </button>
-              <button 
-                onClick={() => scrollToSection('services')}
-                className="block text-white hover:text-[#FFB400] transition-colors py-2 w-full text-left"
+              <button
+                onClick={() => {
+                  scrollToSection('services')
+                  setIsMobileMenuOpen(false)
+                }}
+                className="block w-full text-left px-3 py-2 text-white hover:bg-[#FFB400]/10 rounded-md"
               >
                 Diensten
               </button>
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="block text-white hover:text-[#FFB400] transition-colors py-2 w-full text-left"
+              <button
+                onClick={() => {
+                  scrollToSection('about')
+                  setIsMobileMenuOpen(false)
+                }}
+                className="block w-full text-left px-3 py-2 text-white hover:bg-[#FFB400]/10 rounded-md"
               >
                 Over Ons
               </button>

@@ -1,7 +1,12 @@
 'use client'
 import React, { useState } from 'react'
 import type { FC } from 'react'
-import FreelancerModal from '../modals/FreelancerModal'
+import dynamic from 'next/dynamic'
+
+// Dynamisch importeren van de FreelancerModal component
+const FreelancerModal = dynamic(() => import('../modals/FreelancerModal'), {
+  ssr: false // Dit voorkomt hydration issues
+})
 
 const Freelancers: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -104,10 +109,12 @@ const Freelancers: FC = () => {
         </div>
       </div>
 
-      <FreelancerModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {isModalOpen && (
+        <FreelancerModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </section>
   )
 }

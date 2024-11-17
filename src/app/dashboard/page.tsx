@@ -1,178 +1,116 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Cookies from 'js-cookie'
+import Link from 'next/link'
 
-interface Quote {
-  _id: string
-  websiteType: string
-  features: string[]
-  budget: string
-  timeline: string
-  companyName: string
-  contactPerson: string
-  email: string
-  phone: string
-  status: string
-  createdAt: string
-}
-
-interface Freelancer {
-  _id: string
-  name: string
-  email: string
-  skills: string[]
-  experience: string
-  availability: string
-  rate: string
-  portfolio?: string
-  status: string
-  createdAt: string
+interface DashboardCard {
+  title: string
+  count: number
+  link: string
+  description: string
+  icon: string
 }
 
 export default function Dashboard() {
-  const router = useRouter()
-  const [quotes, setQuotes] = useState<Quote[]>([])
-  const [freelancers, setFreelancers] = useState<Freelancer[]>([])
+  const [quotesCount, setQuotesCount] = useState(0)
+  const [freelancersCount, setFreelancersCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = Cookies.get('token')
-    if (!token) {
-      router.push('/dashboard/login')
-    } else {
-      fetchData()
-    }
-  }, [router])
+    fetchCounts()
+  }, [])
 
-  const fetchData = async () => {
+  const fetchCounts = async () => {
     try {
       // Haal quotes op
       const quotesRes = await fetch('/api/quotes')
       const quotesData = await quotesRes.json()
-      setQuotes(quotesData)
+      setQuotesCount(quotesData.length)
 
       // Haal freelancers op
       const freelancersRes = await fetch('/api/freelancers')
       const freelancersData = await freelancersRes.json()
-      setFreelancers(freelancersData)
+      setFreelancersCount(freelancersData.length)
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('Error fetching counts:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleLogout = () => {
-    Cookies.remove('token')
-    router.push('/dashboard/login')
+  const dashboardCards: DashboardCard[] = [
+    {
+      title: 'Offerte Aanvragen',
+      count: quotesCount,
+      link: '/dashboard/quotes',
+      description: 'Bekijk en beheer alle offerte aanvragen',
+      icon: '📝'
+    },
+    {
+      title: 'Freelancers',
+      count: freelancersCount,
+      link: '/dashboard/freelancers',
+      description: 'Bekijk en beheer alle freelancer aanmeldingen',
+      icon: '👥'
+    }
+  ]
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
   }
 
-  if (loading) return <div>Loading...</div>
-
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          Uitloggen
-        </button>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Dashboard Overzicht</h1>
+      
+      {/* Statistieken Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {dashboardCards.map((card) => (
+          <Link 
+            href={card.link} 
+            key={card.title}
+            className="block bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-semibold text-gray-900">{card.title}</p>
+                  <p className="text-sm text-gray-500">{card.description}</p>
+                </div>
+                <span className="text-3xl">{card.icon}</span>
+              </div>
+              <div className="mt-4">
+                <p className="text-2xl font-bold text-blue-600">{card.count}</p>
+                <p className="text-sm text-gray-500">Totaal aantal</p>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
 
-      {/* Recente Offerte Aanvragen */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Recente Offerte Aanvragen</h2>
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bedrijf</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {quotes.map((quote) => (
-                <tr key={quote._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{quote.companyName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{quote.websiteType}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{quote.budget}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>{quote.contactPerson}</div>
-                    <div className="text-sm text-gray-500">{quote.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${quote.status === 'nieuw' ? 'bg-green-100 text-green-800' : 
-                      quote.status === 'in_behandeling' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-gray-100 text-gray-800'}`}>
-                      {quote.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(quote.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Recente Freelancer Aanmeldingen */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Recente Freelancer Aanmeldingen</h2>
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ervaring</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarief</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {freelancers.map((freelancer) => (
-                <tr key={freelancer._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>{freelancer.name}</div>
-                    <div className="text-sm text-gray-500">{freelancer.email}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {freelancer.skills.map((skill, index) => (
-                        <span key={index} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{freelancer.experience}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{freelancer.rate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${freelancer.status === 'beschikbaar' ? 'bg-green-100 text-green-800' : 
-                      freelancer.status === 'bezet' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-gray-100 text-gray-800'}`}>
-                      {freelancer.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(freelancer.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Recente Activiteit */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Snelle Acties</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button 
+            onClick={() => window.location.href = '/dashboard/quotes'}
+            className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <h3 className="font-semibold text-blue-900">Bekijk Offerte Aanvragen</h3>
+            <p className="text-sm text-blue-700">Beheer en reageer op nieuwe aanvragen</p>
+          </button>
+          
+          <button 
+            onClick={() => window.location.href = '/dashboard/freelancers'}
+            className="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <h3 className="font-semibold text-green-900">Bekijk Freelancers</h3>
+            <p className="text-sm text-green-700">Beheer freelancer aanmeldingen</p>
+          </button>
         </div>
       </div>
     </div>

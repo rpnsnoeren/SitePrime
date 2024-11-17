@@ -1,30 +1,24 @@
 import { NextResponse } from 'next/server'
-import dbConnect from '../../../../lib/db'
-import Quote from '../../../../lib/models/Quote'
+import { supabase } from '@/lib/supabase'
 
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect()
     const { id } = params
     const body = await request.json()
 
-    const updatedQuote = await Quote.findByIdAndUpdate(
-      id,
-      { $set: body },
-      { new: true }
-    )
+    const { data, error } = await supabase
+      .from('quotes')
+      .update(body)
+      .eq('id', id)
+      .select()
+      .single()
 
-    if (!updatedQuote) {
-      return NextResponse.json(
-        { error: 'Quote not found' },
-        { status: 404 }
-      )
-    }
+    if (error) throw error
 
-    return NextResponse.json(updatedQuote)
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Error updating quote:', error)
     return NextResponse.json(

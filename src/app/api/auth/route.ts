@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/db'
-import User from '@/lib/models/User'
 
 export async function POST(request: Request) {
   try {
-    await dbConnect()
     const { username, password } = await request.json()
     
     console.log('Login poging voor gebruiker:', username)
@@ -20,10 +18,22 @@ export async function POST(request: Request) {
     }
 
     // Zoek gebruiker
-    const user = await User.findOne({ username })
-    console.log('Gebruiker gevonden:', user ? 'ja' : 'nee')
-    
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      return NextResponse.json(
+        { error: 'Database error', details: error.message },
+        { status: 500 }
+      )
+    }
+
     if (!user) {
+      console.error('Gebruiker niet gevonden:', username)
       return NextResponse.json(
         { error: 'Gebruiker niet gevonden' },
         { status: 401 }
@@ -32,49 +42,44 @@ export async function POST(request: Request) {
 
     // Valideer wachtwoord
     const isValid = await bcrypt.compare(password, user.password)
-    console.log('Wachtwoord validatie resultaat:', isValid)
     
     if (!isValid) {
+      console.error('Ongeldig wachtwoord voor gebruiker:', username)
       return NextResponse.json(
         { error: 'Ongeldig wachtwoord' },
         { status: 401 }
       )
     }
 
-    // Controleer JWT_SECRET
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET niet geconfigureerd')
-      return NextResponse.json(
-        { error: 'Server configuratie fout' },
-        { status: 500 }
-      )
-    }
-
     // Genereer token
     const token = jwt.sign(
       { 
-        userId: user._id, 
+        sub: user.id,
         username: user.username,
         role: user.role 
       },
-      process.env.JWT_SECRET,
+      process.env.SUPABASE_JWT_SECRET!,
       { expiresIn: '1d' }
     )
 
-    // Stuur response
+    // Stuur response met token en user info
     return NextResponse.json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         role: user.role
       }
     })
+
   } catch (error) {
-    console.error('Auth error:', error)
+    console.error('Login error:', error)
     return NextResponse.json(
-      { error: 'Authentication failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Er is een fout opgetreden',
+        details: error instanceof Error ? error.message : 'Onbekende fout'
+      },
       { status: 500 }
     )
   }

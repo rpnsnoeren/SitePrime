@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "create-admin": "ts-node src/scripts/createAdmin.ts"
+    "create-admin": "node -r ts-node/register scripts/createAdmin.ts"
   },
   "dependencies": {
     "@replit/database": "^2.0.5",
@@ -23,7 +23,9 @@
     "next": "14.0.0",
     "nodemailer": "^6.9.16",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/auth-helpers-nextjs": "^0.8.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -38,6 +40,8 @@
     "postcss": "^8.4.21",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@supabase/auth-helpers-react": "^0.4.2",
+    "tsconfig-paths": "^4.2.0"
   }
 }
