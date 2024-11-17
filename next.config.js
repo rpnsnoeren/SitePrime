@@ -5,9 +5,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  experimental: {
-    // Verwijder appDir en serverActions want die zijn nu standaard
-  }
+  output: 'standalone',
 }
 
 module.exports = nextConfig

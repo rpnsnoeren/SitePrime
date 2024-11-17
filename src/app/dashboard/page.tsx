@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface DashboardCard {
@@ -11,6 +12,7 @@ interface DashboardCard {
 }
 
 export default function Dashboard() {
+  const router = useRouter()
   const [quotesCount, setQuotesCount] = useState(0)
   const [freelancersCount, setFreelancersCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -21,12 +23,10 @@ export default function Dashboard() {
 
   const fetchCounts = async () => {
     try {
-      // Haal quotes op
       const quotesRes = await fetch('/api/quotes')
       const quotesData = await quotesRes.json()
       setQuotesCount(quotesData.length)
 
-      // Haal freelancers op
       const freelancersRes = await fetch('/api/freelancers')
       const freelancersData = await freelancersRes.json()
       setFreelancersCount(freelancersData.length)
@@ -66,7 +66,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard Overzicht</h1>
       
-      {/* Statistieken Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {dashboardCards.map((card) => (
           <Link 
@@ -91,12 +90,11 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Recente Activiteit */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Snelle Acties</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button 
-            onClick={() => window.location.href = '/dashboard/quotes'}
+            onClick={() => router.push('/dashboard/quotes')}
             className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <h3 className="font-semibold text-blue-900">Bekijk Offerte Aanvragen</h3>
@@ -104,7 +102,7 @@ export default function Dashboard() {
           </button>
           
           <button 
-            onClick={() => window.location.href = '/dashboard/freelancers'}
+            onClick={() => router.push('/dashboard/freelancers')}
             className="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
             <h3 className="font-semibold text-green-900">Bekijk Freelancers</h3>
