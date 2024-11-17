@@ -2,16 +2,17 @@
 import { useEffect, useState } from 'react'
 
 interface Freelancer {
-  _id: string
+  id: string
   name: string
   email: string
-  skills: string[]
+  phone: string
+  expertise: string[]
   experience: string
   availability: string
   rate: string
-  portfolio?: string
+  portfolio: string
   status: string
-  createdAt: string
+  created_at: string
 }
 
 export default function FreelancersPage() {
@@ -58,27 +59,24 @@ export default function FreelancersPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {freelancers.map((freelancer) => (
-            <li key={freelancer._id} className="p-4 hover:bg-gray-50">
+            <li key={freelancer.id} className="p-4 hover:bg-gray-50">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">{freelancer.name}</h3>
                   <p className="text-sm text-gray-600">
-                    Skills: {freelancer.skills.join(', ')}
+                    Expertise: {freelancer.expertise.join(', ')}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Email: <a href={`mailto:${freelancer.email}`}>{freelancer.email}</a>
+                    Ervaring: {freelancer.experience}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Rate: {freelancer.rate}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Experience: {freelancer.experience}
+                    Contact: {freelancer.email}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <select
                     value={freelancer.status}
-                    onChange={(e) => updateFreelancerStatus(freelancer._id, e.target.value)}
+                    onChange={(e) => updateFreelancerStatus(freelancer.id, e.target.value)}
                     className="ml-2 rounded border border-gray-300 p-2"
                   >
                     <option value="beschikbaar">Beschikbaar</option>
@@ -86,7 +84,7 @@ export default function FreelancersPage() {
                     <option value="inactief">Inactief</option>
                   </select>
                   <p className="text-sm text-gray-500">
-                    {new Date(freelancer.createdAt).toLocaleDateString()}
+                    {new Date(freelancer.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>

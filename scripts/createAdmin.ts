@@ -48,23 +48,9 @@ async function createAdmin() {
 
     console.log('Admin gebruiker succesvol aangemaakt!')
     console.log('Username:', 'admin')
-    console.log('Password:', password) // Niet doen in productie!
+    console.log('Password:', password)
     console.log('Role:', 'admin')
     console.log('ID:', user.id)
-
-    // Test de login
-    const { data: testUser, error: testError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', 'admin')
-      .single()
-
-    if (testError) {
-      throw testError
-    }
-
-    const isValid = await bcrypt.compare(password, testUser.password)
-    console.log('Wachtwoord validatie test:', isValid)
 
   } catch (error) {
     console.error('Fout bij aanmaken admin:', error)
