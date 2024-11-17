@@ -8,48 +8,46 @@ interface FreelancerModalProps {
 }
 
 interface FormData {
-  fullName: string
+  name: string
   email: string
   phone: string
-  portfolioUrl: string
-  expertise: string[]
-  yearsExperience: string
-  weeklyAvailability: string
-  rateRange: string
+  portfolio: string
+  skills: string[]
+  experience: string
+  availability: string
+  rate: string
 }
 
 const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState<FormData>({
-    fullName: '',
+    name: '',
     email: '',
     phone: '',
-    portfolioUrl: '',
-    expertise: [],
-    yearsExperience: '',
-    weeklyAvailability: '',
-    rateRange: ''
+    portfolio: '',
+    skills: [],
+    experience: '',
+    availability: '',
+    rate: ''
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [error, setError] = useState<string | null>(null)
 
-  const expertiseOptions = [
-    'Frontend Development',
-    'Backend Development',
-    'Full Stack Development',
-    'UI/UX Design',
-    'WordPress Development',
-    'E-commerce',
-    'API Development',
-    'Mobile Development'
+  const skillOptions = [
+    'Frontend',
+    'Backend',
+    'UI/UX',
+    'Mobile',
+    'DevOps'
   ]
 
-  const handleExpertiseToggle = (expertise: string) => {
+  const handleSkillToggle = (skill: string) => {
     setFormData(prev => ({
       ...prev,
-      expertise: prev.expertise.includes(expertise)
-        ? prev.expertise.filter(e => e !== expertise)
-        : [...prev.expertise, expertise]
+      skills: prev.skills.includes(skill)
+        ? prev.skills.filter(s => s !== skill)
+        : [...prev.skills, skill]
     }))
   }
 
@@ -65,41 +63,71 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitStatus('idle')
+    setError(null)
+
+    // Valideer verplichte velden
+    const requiredFields = ['name', 'email', 'experience', 'availability', 'rate']
+    const emptyFields = requiredFields.filter(field => !formData[field as keyof FormData])
+    
+    if (emptyFields.length > 0) {
+      setError(`De volgende velden zijn verplicht: ${emptyFields.join(', ')}`)
+      setIsSubmitting(false)
+      return
+    }
+
+    if (formData.skills.length === 0) {
+      setError('Selecteer minimaal één skill')
+      setIsSubmitting(false)
+      return
+    }
 
     try {
+      // Bereid de data voor volgens het model schema
+      const submitData = {
+        ...formData,
+        status: 'beschikbaar'
+      }
+
+      console.log('Versturen freelancer data:', submitData)
+      
       const response = await fetch('/api/freelancers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
-      if (!response.ok) throw new Error('Verzenden mislukt')
+      const data = await response.json()
+      console.log('Response van server:', data)
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Verzenden mislukt')
+      }
 
       setSubmitStatus('success')
       setTimeout(() => {
         onClose()
         setFormData({
-          fullName: '',
+          name: '',
           email: '',
           phone: '',
-          portfolioUrl: '',
-          expertise: [],
-          yearsExperience: '',
-          weeklyAvailability: '',
-          rateRange: ''
+          portfolio: '',
+          skills: [],
+          experience: '',
+          availability: '',
+          rate: ''
         })
       }, 2000)
     } catch (error) {
       console.error('Error:', error)
       setSubmitStatus('error')
+      setError(error instanceof Error ? error.message : 'Er is iets misgegaan')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Render success/error message
   const renderSubmitStatus = () => {
     if (submitStatus === 'success') {
       return (
@@ -124,33 +152,9 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
             <p className="text-gray-600 mb-6">
               Bedankt voor je interesse in SitePrime. We nemen je aanmelding zorgvuldig in behandeling.
             </p>
-            <div className="text-left space-y-4 mb-6">
-              <h4 className="font-semibold text-[#1E3D59]">Vervolgstappen:</h4>
-              <ol className="space-y-2 text-gray-600">
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2 mt-0.5">1</span>
-                  <span>Portfolio review door ons team</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2 mt-0.5">2</span>
-                  <span>Korte video call om kennis te maken</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2 mt-0.5">3</span>
-                  <span>Technische assessment passend bij jouw expertise</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2 mt-0.5">4</span>
-                  <span>Referentiecheck van eerdere projecten</span>
-                </li>
-              </ol>
-            </div>
-            <p className="text-sm text-gray-500">
-              Je ontvangt binnen 2 werkdagen een email met meer informatie over de vervolgstappen.
-            </p>
             <button
               onClick={onClose}
-              className="mt-6 px-6 py-2 bg-[#1E3D59] text-white rounded-lg hover:bg-[#2a5580] transition-colors"
+              className="px-6 py-2 bg-[#1E3D59] text-white rounded-lg hover:bg-[#2a5580] transition-colors"
             >
               Sluiten
             </button>
@@ -161,8 +165,8 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
 
     if (submitStatus === 'error') {
       return (
-        <div className="bg-red-50 text-red-500 p-4 rounded-lg mb-6">
-          Er is iets misgegaan bij het verzenden. Probeer het opnieuw.
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error || 'Er is iets misgegaan. Probeer het opnieuw.'}
         </div>
       )
     }
@@ -190,14 +194,20 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Volledige Naam
             </label>
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
+              name="name"
+              value={formData.name}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB400] focus:border-transparent"
               required
@@ -233,32 +243,32 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Portfolio/Website URL
+              Portfolio URL
             </label>
             <input
               type="url"
-              name="portfolioUrl"
-              value={formData.portfolioUrl}
+              name="portfolio"
+              value={formData.portfolio}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB400] focus:border-transparent"
-              required
+              placeholder="https://..."
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Expertise
+              Skills
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {expertiseOptions.map((expertise) => (
-                <label key={expertise} className="flex items-center space-x-2">
+              {skillOptions.map((skill) => (
+                <label key={skill} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={formData.expertise.includes(expertise)}
-                    onChange={() => handleExpertiseToggle(expertise)}
+                    checked={formData.skills.includes(skill)}
+                    onChange={() => handleSkillToggle(skill)}
                     className="rounded text-[#FFB400] focus:ring-[#FFB400]"
                   />
-                  <span className="text-sm">{expertise}</span>
+                  <span className="text-sm">{skill}</span>
                 </label>
               ))}
             </div>
@@ -266,59 +276,59 @@ const FreelancerModal: FC<FreelancerModalProps> = ({ isOpen, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Jaren Ervaring
+              Ervaring
             </label>
             <select
-              name="yearsExperience"
-              value={formData.yearsExperience}
+              name="experience"
+              value={formData.experience}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB400] focus:border-transparent"
               required
             >
               <option value="">Selecteer jaren ervaring</option>
-              <option value="0-2">0-2 jaar</option>
-              <option value="2-5">2-5 jaar</option>
-              <option value="5-10">5-10 jaar</option>
-              <option value="10+">10+ jaar</option>
+              <option value="0-2 jaar">0-2 jaar</option>
+              <option value="2-5 jaar">2-5 jaar</option>
+              <option value="5-10 jaar">5-10 jaar</option>
+              <option value="10+ jaar">10+ jaar</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Beschikbaarheid per week
+              Beschikbaarheid
             </label>
             <select
-              name="weeklyAvailability"
-              value={formData.weeklyAvailability}
+              name="availability"
+              value={formData.availability}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB400] focus:border-transparent"
               required
             >
               <option value="">Selecteer beschikbaarheid</option>
-              <option value="0-8">0-8 uur</option>
-              <option value="8-16">8-16 uur</option>
-              <option value="16-24">16-24 uur</option>
-              <option value="24-32">24-32 uur</option>
-              <option value="32-40">32-40 uur</option>
+              <option value="0-8 uur">0-8 uur</option>
+              <option value="8-16 uur">8-16 uur</option>
+              <option value="16-24 uur">16-24 uur</option>
+              <option value="24-32 uur">24-32 uur</option>
+              <option value="32-40 uur">32-40 uur</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Uurtarief Range
+              Uurtarief
             </label>
             <select
-              name="rateRange"
-              value={formData.rateRange}
+              name="rate"
+              value={formData.rate}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFB400] focus:border-transparent"
               required
             >
-              <option value="">Selecteer uurtarief range</option>
-              <option value="30-50">€30-€50 per uur</option>
-              <option value="50-75">€50-€75 per uur</option>
-              <option value="75-100">€75-€100 per uur</option>
-              <option value="100+">€100+ per uur</option>
+              <option value="">Selecteer uurtarief</option>
+              <option value="€30-€50 per uur">€30-€50 per uur</option>
+              <option value="€50-€75 per uur">€50-€75 per uur</option>
+              <option value="€75-€100 per uur">€75-€100 per uur</option>
+              <option value="> €100 per uur">&gt; €100 per uur</option>
             </select>
           </div>
 

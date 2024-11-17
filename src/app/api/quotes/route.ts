@@ -1,26 +1,16 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-const DB_PATH = path.join(process.cwd(), 'data', 'quotes.json')
-
-// Zorg ervoor dat de data directory bestaat
-if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
-  fs.mkdirSync(path.join(process.cwd(), 'data'))
-}
-
-// Maak quotes.json aan als deze nog niet bestaat
-if (!fs.existsSync(DB_PATH)) {
-  fs.writeFileSync(DB_PATH, JSON.stringify([]))
-}
+import dbConnect from '@/lib/db'
+import Quote from '@/lib/models/Quote'
 
 export async function GET() {
   try {
-    const quotes = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'))
+    await dbConnect()
+    const quotes = await Quote.find().sort({ createdAt: -1 })
     return NextResponse.json(quotes)
   } catch (error) {
+    console.error('Error fetching quotes:', error)
     return NextResponse.json(
-      { error: 'Kon aanvragen niet ophalen' },
+      { error: 'Error fetching quotes' },
       { status: 500 }
     )
   }
@@ -28,23 +18,43 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.json()
-    const quotes = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'))
-    
-    const newQuote = {
-      id: Date.now(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-      status: 'nieuw'
-    }
-    
-    quotes.push(newQuote)
-    fs.writeFileSync(DB_PATH, JSON.stringify(quotes, null, 2))
+    await dbConnect()
+    const data = await request.json()
+    console.log('Ontvangen quote data:', data)
 
-    return NextResponse.json(newQuote)
+    // Valideer verplichte velden
+    const requiredFields = ['websiteType', 'budget', 'timeline', 'companyName', 'contactPerson', 'email', 'phone']
+    for (const field of requiredFields) {
+      if (!data[field]) {
+        return NextResponse.json(
+          { error: `${field} is verplicht` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Sla de quote op in de database
+    const quote = new Quote(data)
+    
+    try {
+      const savedQuote = await quote.save()
+      console.log('Quote opgeslagen:', savedQuote)
+      return NextResponse.json({ success: true, quote: savedQuote })
+    } catch (validationError: any) {
+      console.error('Validatie error:', validationError)
+      if (validationError.name === 'ValidationError') {
+        const errors = Object.values(validationError.errors).map((err: any) => err.message)
+        return NextResponse.json(
+          { error: 'Validatie error', details: errors },
+          { status: 400 }
+        )
+      }
+      throw validationError
+    }
   } catch (error) {
+    console.error('Error submitting quote:', error)
     return NextResponse.json(
-      { error: 'Kon aanvraag niet opslaan' },
+      { error: 'Failed to submit quote', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

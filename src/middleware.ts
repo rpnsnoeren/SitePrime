@@ -1,27 +1,35 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { jwtVerify } from 'jose'
 
-// Deze functie moet als 'default' geëxporteerd worden
-export default function middleware(request: NextRequest) {
-  // Als het een dashboard pagina is (maar niet de login pagina)
-  if (
-    request.nextUrl.pathname.startsWith('/dashboard') &&
-    !request.nextUrl.pathname.includes('/login')
-  ) {
-    // Check voor de isLoggedIn cookie
-    const isLoggedIn = request.cookies.get('isLoggedIn')?.value
-    
-    if (!isLoggedIn) {
-      // Redirect naar login als niet ingelogd
-      const loginUrl = new URL('/dashboard/login', request.url)
-      return NextResponse.redirect(loginUrl)
+export async function middleware(request: NextRequest) {
+  // Sla login route over
+  if (request.nextUrl.pathname === '/dashboard/login') {
+    return NextResponse.next()
+  }
+
+  // Check voor dashboard routes
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    const token = request.cookies.get('token')
+
+    if (!token) {
+      return NextResponse.redirect(new URL('/dashboard/login', request.url))
+    }
+
+    try {
+      // Verifieer token
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+      await jwtVerify(token.value, secret)
+      return NextResponse.next()
+    } catch (error) {
+      // Token ongeldig of verlopen
+      return NextResponse.redirect(new URL('/dashboard/login', request.url))
     }
   }
 
   return NextResponse.next()
 }
 
-// Config voor de middleware
 export const config = {
-  matcher: '/dashboard/:path*',
+  matcher: '/dashboard/:path*'
 } 
