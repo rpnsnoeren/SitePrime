@@ -17,19 +17,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Test de connectie
-const testConnection = async () => {
+// Test de connectie en exporteer de functie zodat deze gebruikt kan worden
+export const testSupabaseConnection = async () => {
   try {
-    const { data, error: testError } = await supabase
+    const { error: testError } = await supabase
       .from('quotes')
       .select('count', { count: 'exact', head: true })
 
     if (testError) {
       console.error('Supabase connectie error:', testError.message)
-    } else {
-      console.log('Supabase connectie succesvol')
-    }
+      return false
+    } 
+    console.log('Supabase connectie succesvol')
+    return true
   } catch (error) {
     console.error('Onverwachte Supabase error:', error)
+    return false
   }
 } 
