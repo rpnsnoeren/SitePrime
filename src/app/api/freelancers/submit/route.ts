@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server'
-import dbConnect from '../../../../lib/db'
-import Freelancer from '../../../../lib/models/Freelancer'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
-    await dbConnect()
     const data = await request.json()
-    console.log('Ontvangen freelancer data:', data)
 
-    // Sla de freelancer op in de database
-    const freelancer = new Freelancer(data)
-    const savedFreelancer = await freelancer.save()
-    console.log('Freelancer opgeslagen:', savedFreelancer)
+    const { data: freelancer, error } = await supabase
+      .from('freelancers')
+      .insert([data])
+      .select()
+      .single()
 
-    return NextResponse.json({ success: true, freelancer: savedFreelancer })
+    if (error) throw error
+
+    return NextResponse.json({ success: true, freelancer })
   } catch (error) {
     console.error('Error submitting freelancer:', error)
     return NextResponse.json(

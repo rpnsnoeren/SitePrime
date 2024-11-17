@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server'
-import dbConnect from '../../../../lib/db'
-import Quote from '../../../../lib/models/Quote'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
-    await dbConnect()
     const data = await request.json()
-    console.log('Ontvangen quote data:', data)
 
-    // Sla de quote op in de database
-    const quote = new Quote(data)
-    const savedQuote = await quote.save()
-    console.log('Quote opgeslagen:', savedQuote)
+    const { data: quote, error } = await supabase
+      .from('quotes')
+      .insert([data])
+      .select()
+      .single()
 
-    return NextResponse.json({ success: true, quote: savedQuote })
+    if (error) throw error
+
+    return NextResponse.json({ success: true, quote })
   } catch (error) {
     console.error('Error submitting quote:', error)
     return NextResponse.json(

@@ -5,10 +5,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Voorkom hydration issues met Supabase
   experimental: {
-    appDir: true,
-    serverActions: true,
+    // Verwijder appDir en serverActions want die zijn nu standaard
   }
 }
 
