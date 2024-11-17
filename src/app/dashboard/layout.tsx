@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Cookies from 'js-cookie'
@@ -12,17 +12,28 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+    const token = Cookies.get('token')
+    if (!token && pathname !== '/dashboard/login') {
+      router.push('/dashboard/login')
+    }
+  }, [pathname, router])
 
   // Als we op de login pagina zijn, toon alleen login component
   if (pathname === '/dashboard/login') {
     return <>{children}</>
   }
 
-  // Check of er een token is
-  const token = Cookies.get('token')
-  if (!token) {
-    router.push('/dashboard/login')
-    return null
+  // Wacht tot we aan client-side zijn
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
   }
 
   return (
