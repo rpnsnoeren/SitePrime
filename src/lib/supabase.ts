@@ -9,15 +9,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-try {
-  // Valideer de URL
-  new URL(supabaseUrl)
-} catch (error) {
-  throw new Error(
-    `Ongeldige NEXT_PUBLIC_SUPABASE_URL: ${supabaseUrl}. Zorg ervoor dat dit een geldige URL is.`
-  )
-}
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -26,22 +17,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Test de connectie met async/await en proper error handling
+// Test de connectie
 const testConnection = async () => {
   try {
-    const { error } = await supabase
+    const { data, error: testError } = await supabase
       .from('quotes')
       .select('count', { count: 'exact', head: true })
 
-    if (error) {
-      console.error('Supabase connectie error:', error.message)
+    if (testError) {
+      console.error('Supabase connectie error:', testError.message)
     } else {
       console.log('Supabase connectie succesvol')
     }
   } catch (error) {
     console.error('Onverwachte Supabase error:', error)
   }
-}
-
-// Voer de test uit
-testConnection() 
+} 
