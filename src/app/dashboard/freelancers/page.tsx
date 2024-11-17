@@ -66,6 +66,9 @@ export default function FreelancersPage() {
                     Skills: {freelancer.skills.join(', ')}
                   </p>
                   <p className="text-sm text-gray-600">
+                    Email: <a href={`mailto:${freelancer.email}`}>{freelancer.email}</a>
+                  </p>
+                  <p className="text-sm text-gray-600">
                     Rate: {freelancer.rate}
                   </p>
                   <p className="text-sm text-gray-600">
