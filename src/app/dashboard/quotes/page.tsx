@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 
 interface Quote {
-  _id: string
+  id: string
   websiteType: string
   features: string[]
   budget: string
@@ -12,7 +12,7 @@ interface Quote {
   email: string
   phone: string
   status: string
-  createdAt: string
+  created_at: string
 }
 
 export default function QuotesPage() {
@@ -44,7 +44,7 @@ export default function QuotesPage() {
         },
         body: JSON.stringify({ status: newStatus }),
       })
-      fetchQuotes() // Refresh de lijst
+      fetchQuotes()
     } catch (error) {
       console.error('Error updating quote:', error)
     }
@@ -59,7 +59,7 @@ export default function QuotesPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {quotes.map((quote) => (
-            <li key={quote._id} className="p-4 hover:bg-gray-50">
+            <li key={quote.id} className="p-4 hover:bg-gray-50">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">{quote.companyName}</h3>
@@ -76,7 +76,7 @@ export default function QuotesPage() {
                 <div className="space-y-2">
                   <select
                     value={quote.status}
-                    onChange={(e) => updateQuoteStatus(quote._id, e.target.value)}
+                    onChange={(e) => updateQuoteStatus(quote.id, e.target.value)}
                     className="ml-2 rounded border border-gray-300 p-2"
                   >
                     <option value="nieuw">Nieuw</option>
@@ -85,7 +85,7 @@ export default function QuotesPage() {
                     <option value="geannuleerd">Geannuleerd</option>
                   </select>
                   <p className="text-sm text-gray-500">
-                    {new Date(quote.createdAt).toLocaleDateString()}
+                    {new Date(quote.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
