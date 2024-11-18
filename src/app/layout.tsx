@@ -1,5 +1,6 @@
-import { Inter } from 'next/font/google'
+import { Analytics } from "@vercel/analytics/react"
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
@@ -7,8 +8,8 @@ import Footer from './components/layout/Footer'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Moderne Landing Page',
-  description: 'Gemaakt met Next.js, Tailwind CSS en Flowbite',
+  title: 'SitePrime',
+  description: 'Premium Websites binnen Handbereik',
 }
 
 export default function RootLayout({
@@ -23,6 +24,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-grow">{children}</main>
           <Footer />
+          <Analytics />
         </div>
       </body>
     </html>
