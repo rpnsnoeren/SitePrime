@@ -3,7 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from './components/Navbar'
 
-const inter = Inter({ subsets: ['latin'] })
+// Hernoem naar _inter om ESLint te laten weten dat dit bewust ongebruikt is
+const _inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'SitePrime',
@@ -17,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <body>
+      <body className={_inter.className}>
         <Navbar />
         {children}
       </body>
