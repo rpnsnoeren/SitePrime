@@ -20,6 +20,7 @@ interface Quote {
 export default function QuotesDashboard() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
 
   useEffect(() => {
@@ -28,15 +29,20 @@ export default function QuotesDashboard() {
 
   const fetchQuotes = async () => {
     try {
-      const { data, error } = await supabase
+      setError(null)
+      const { data, error: supabaseError } = await supabase
         .from('quotes')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (supabaseError) {
+        throw supabaseError
+      }
+
       setQuotes(data || [])
-    } catch (error) {
-      console.error('Error fetching quotes:', error)
+    } catch (err) {
+      console.error('Error fetching quotes:', err)
+      setError('Er is een fout opgetreden bij het ophalen van de offertes')
     } finally {
       setLoading(false)
     }
@@ -44,22 +50,53 @@ export default function QuotesDashboard() {
 
   const updateQuoteStatus = async (id: string, newStatus: string) => {
     try {
-      const { error } = await supabase
+      setError(null)
+      const { error: updateError } = await supabase
         .from('quotes')
         .update({ status: newStatus })
         .eq('id', id)
 
-      if (error) throw error
-      
+      if (updateError) {
+        throw updateError
+      }
+
       // Refresh quotes na update
-      fetchQuotes()
-    } catch (error) {
-      console.error('Error updating quote:', error)
+      await fetchQuotes()
+    } catch (err) {
+      console.error('Error updating quote:', err)
+      setError('Er is een fout opgetreden bij het updaten van de status')
     }
   }
 
   if (loading) {
-    return <div className="p-4">Laden...</div>
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <p>{error}</p>
+        <button 
+          onClick={fetchQuotes}
+          className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+        >
+          Probeer opnieuw
+        </button>
+      </div>
+    )
+  }
+
+  if (quotes.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-semibold text-gray-600">Geen offertes gevonden</h2>
+        <p className="mt-2 text-gray-500">Er zijn nog geen offerte aanvragen binnengekomen.</p>
+      </div>
+    )
   }
 
   return (
