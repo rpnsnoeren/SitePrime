@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { supabase } from '@/lib/supabase'
+import { testSupabaseConnection } from '@/lib/supabase'
 
 interface Quote {
   id: string
@@ -21,11 +22,23 @@ export default function QuotesDashboard() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null)
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
 
   useEffect(() => {
-    fetchQuotes()
+    checkConnection()
   }, [])
+
+  const checkConnection = async () => {
+    const isConnected = await testSupabaseConnection()
+    setConnectionStatus(isConnected)
+    if (isConnected) {
+      fetchQuotes()
+    } else {
+      setError('Kan geen verbinding maken met de database. Controleer de instellingen.')
+      setLoading(false)
+    }
+  }
 
   const fetchQuotes = async () => {
     try {
@@ -85,6 +98,20 @@ export default function QuotesDashboard() {
           className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
         >
           Probeer opnieuw
+        </button>
+      </div>
+    )
+  }
+
+  if (!connectionStatus) {
+    return (
+      <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <p>Database verbinding niet mogelijk. Controleer of alle instellingen correct zijn.</p>
+        <button 
+          onClick={checkConnection}
+          className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+        >
+          Probeer opnieuw te verbinden
         </button>
       </div>
     )

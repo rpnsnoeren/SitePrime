@@ -8,6 +8,16 @@ export default function Navbar() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false)
   const [isFreelancerModalOpen, setIsFreelancerModalOpen] = useState(false)
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+  }
+
   return (
     <nav className="bg-[#1E3D59] border-b border-[#FFB400]/20">
       <div className="max-w-screen-xl mx-auto px-4">
@@ -24,15 +34,24 @@ export default function Navbar() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link href="/" className="text-white hover:text-[#FFB400] transition-colors">
-              Home
-            </Link>
-            <Link href="#diensten" className="text-white hover:text-[#FFB400] transition-colors">
+            <button
+              onClick={() => scrollToSection('diensten')}
+              className="text-white hover:text-[#FFB400] transition-colors"
+            >
               Diensten
-            </Link>
-            <Link href="#over-ons" className="text-white hover:text-[#FFB400] transition-colors">
+            </button>
+            <button
+              onClick={() => scrollToSection('voordelen')}
+              className="text-white hover:text-[#FFB400] transition-colors"
+            >
+              Voordelen
+            </button>
+            <button
+              onClick={() => scrollToSection('over-ons')}
+              className="text-white hover:text-[#FFB400] transition-colors"
+            >
               Over Ons
-            </Link>
+            </button>
           </div>
 
           {/* Action Buttons */}

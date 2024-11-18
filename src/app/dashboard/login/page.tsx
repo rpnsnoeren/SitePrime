@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 
@@ -9,14 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    // Check of er al een token is
-    const token = Cookies.get('token')
-    if (token) {
-      router.push('/dashboard')
-    }
-  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,22 +22,16 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
+        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login mislukt')
+        throw new Error(data.error || 'Er is een fout opgetreden')
       }
 
       if (data.token) {
-        Cookies.set('token', data.token, {
-          expires: 1,
-          path: '/',
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
-        })
-
         Cookies.set('user', JSON.stringify({
           id: data.user.id,
           username: data.user.username,
@@ -72,7 +58,7 @@ export default function Login() {
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             {error}
           </div>
         )}
