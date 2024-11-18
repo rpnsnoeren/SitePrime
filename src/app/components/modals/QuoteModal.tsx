@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { QuoteData } from '@/types/quote'
 
 interface FormData {
   // Stap 1: Basisinformatie
@@ -112,47 +111,6 @@ const StepIndicator = ({ title, description }: { title: string, description: str
     <h3 className="text-xl font-bold text-gray-900">{title}</h3>
     <p className="text-sm text-gray-600 mt-1">{description}</p>
   </div>
-)
-
-// Voeg deze nieuwe component toe voor mooiere radio buttons
-const RadioOption = ({ 
-  value, 
-  label, 
-  name, 
-  checked, 
-  onChange 
-}: { 
-  value: string
-  label: string
-  name: string
-  checked: boolean
-  onChange: (value: string) => void 
-}) => (
-  <label className="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none">
-    <input
-      type="radio"
-      className="peer sr-only"
-      name={name}
-      value={value}
-      checked={checked}
-      onChange={() => onChange(value)}
-    />
-    <div className="flex w-full items-center justify-between">
-      <div className="flex items-center">
-        <div className="text-sm">
-          <p className="font-medium text-gray-900">{label}</p>
-        </div>
-      </div>
-      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-        checked ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
-      }`}>
-        {checked && (
-          <div className="h-2 w-2 rounded-full bg-white" />
-        )}
-      </div>
-    </div>
-    <div className="absolute -inset-px rounded-lg border-2 pointer-events-none peer-checked:border-blue-600" aria-hidden="true" />
-  </label>
 )
 
 // Voeg deze nieuwe component toe voor mooiere select dropdowns
