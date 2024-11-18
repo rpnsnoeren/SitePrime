@@ -27,7 +27,11 @@ export default function FreelancersPage() {
     try {
       const res = await fetch('/api/freelancers')
       const data = await res.json()
-      setFreelancers(data)
+      const processedData = data.map((freelancer: Freelancer) => ({
+        ...freelancer,
+        expertise: freelancer.expertise || []
+      }))
+      setFreelancers(processedData)
     } catch (error) {
       console.error('Error fetching freelancers:', error)
     } finally {
@@ -64,10 +68,10 @@ export default function FreelancersPage() {
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">{freelancer.name}</h3>
                   <p className="text-sm text-gray-600">
-                    Expertise: {freelancer.expertise.join(', ')}
+                    Expertise: {Array.isArray(freelancer.expertise) ? freelancer.expertise.join(', ') : 'Geen expertise opgegeven'}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Ervaring: {freelancer.experience}
+                    Ervaring: {freelancer.experience || 'Niet opgegeven'}
                   </p>
                   <p className="text-sm text-gray-600">
                     Contact: {freelancer.email}
