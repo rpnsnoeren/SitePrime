@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { supabase } from '@/lib/supabase'
@@ -25,11 +25,7 @@ export default function QuotesDashboard() {
   const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null)
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
 
-  useEffect(() => {
-    checkConnection()
-  }, [])
-
-  const checkConnection = async () => {
+  const checkConnection = useCallback(async () => {
     const isConnected = await testSupabaseConnection()
     setConnectionStatus(isConnected)
     if (isConnected) {
@@ -38,7 +34,11 @@ export default function QuotesDashboard() {
       setError('Kan geen verbinding maken met de database. Controleer de instellingen.')
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkConnection()
+  }, [checkConnection])
 
   const fetchQuotes = async () => {
     try {
