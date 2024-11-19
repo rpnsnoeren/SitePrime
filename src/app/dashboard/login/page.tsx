@@ -15,33 +15,39 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-
+    setError('')
+    
     try {
-      const response = await fetch('/api/auth', {
+      const res = await fetch('/api/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ 
+          username: formData.username,
+          password: formData.password 
+        }),
       })
 
-      const data = await response.json()
+      const data = await res.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Inloggen mislukt')
+      if (data.success) {
+        // Sla de Supabase session op
+        Cookies.set('session', data.session.access_token, { 
+          expires: 1,
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        })
+
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        setError(data.error || 'Login mislukt')
       }
-
-      // Sla gebruikersgegevens op in een cookie
-      Cookies.set('user', JSON.stringify(data.user), { expires: 1 })
-      
-      // Redirect naar dashboard
-      router.push('/dashboard')
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Er is iets misgegaan')
-    } finally {
-      setIsLoading(false)
+    } catch (err) {
+      console.error('Login error:', err)
+      setError('Er is een fout opgetreden bij het inloggen')
     }
   }
 
