@@ -12,14 +12,13 @@ const About: FC = () => {
             </h2>
             <div className="space-y-4">
               <p className="text-lg text-gray-600 leading-relaxed">
-                Wij zijn een innovatief bedrijf dat zich richt op het leveren van hoogwaardige oplossingen voor onze klanten. Met jaren ervaring in de branche, begrijpen we precies wat onze klanten nodig hebben.
-              </p>
+              Ons team bestaat uit gepassioneerde professionals met jarenlange ervaring in webdesign, AI-technologie en klantenservice. We werken elke dag hard om ons platform te verbeteren en onze klanten de best mogelijke ervaring te bieden.              </p>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Onze missie is om technologie toegankelijk te maken voor iedereen, waarbij we focussen op gebruiksgemak en effectiviteit.
-              </p>
+              Onze missie is om het creëren van een website toegankelijk te maken voor iedereen. Met behulp van geavanceerde AI-technologie en een gebruiksvriendelijk onboardingproces stellen we ondernemers in staat om in een mum van tijd een op maat gemaakte website te lanceren die perfect aansluit bij hun merk en doelstellingen.              </p>
             </div>
             
             <div className="mt-8 grid grid-cols-2 gap-8">
+              {/* Stats tijdelijk uitgeschakeld
               <div>
                 <h3 className="text-2xl font-bold text-[#FFB400] mb-2">100+</h3>
                 <p className="text-gray-600">Tevreden klanten</p>
@@ -28,6 +27,7 @@ const About: FC = () => {
                 <h3 className="text-2xl font-bold text-[#FFB400] mb-2">5+ jaar</h3>
                 <p className="text-gray-600">Ervaring</p>
               </div>
+              */}
             </div>
           </div>
 
