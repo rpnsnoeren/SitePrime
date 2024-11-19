@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
+import QuoteDetailModal from '../components/QuoteDetailModal'
 
 interface Quote {
   id: string
@@ -19,25 +20,32 @@ export default function QuotesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
-    const fetchQuotes = async () => {
-      try {
-        const response = await fetch('/api/quotes')
-        if (!response.ok) {
-          throw new Error('Fout bij het ophalen van opdrachten')
-        }
-        const data = await response.json()
-        setQuotes(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Er is een fout opgetreden')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchQuotes()
   }, [])
+
+  const fetchQuotes = async () => {
+    try {
+      const response = await fetch('/api/quotes')
+      if (!response.ok) {
+        throw new Error('Fout bij het ophalen van opdrachten')
+      }
+      const data = await response.json()
+      setQuotes(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Er is een fout opgetreden')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleOpenDetails = (quote: Quote) => {
+    setSelectedQuote(quote)
+    setIsModalOpen(true)
+  }
 
   if (loading) {
     return (
@@ -111,7 +119,7 @@ export default function QuotesPage() {
                 <td className="px-6 py-4 text-sm font-medium">
                   <button 
                     className="text-blue-600 hover:text-blue-900"
-                    onClick={() => {/* Bekijk details */}}
+                    onClick={() => handleOpenDetails(quote)}
                   >
                     Details
                   </button>
@@ -121,6 +129,15 @@ export default function QuotesPage() {
           </tbody>
         </table>
       </div>
+
+      <QuoteDetailModal
+        quote={selectedQuote}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedQuote(null)
+        }}
+      />
     </div>
   )
 } 
