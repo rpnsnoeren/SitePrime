@@ -6,23 +6,53 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
-    const body = await request.json()
-
-    const { data, error } = await supabase
+    const data = await request.json()
+    
+    const { data: quote, error } = await supabase
       .from('quotes')
-      .update(body)
-      .eq('id', id)
+      .update(data)
+      .eq('id', params.id)
       .select()
       .single()
 
     if (error) throw error
 
-    return NextResponse.json(data)
+    return NextResponse.json({ success: true, quote })
   } catch (error) {
-    console.error('Error updating quote:', error)
+    console.error('Server error:', error)
     return NextResponse.json(
-      { error: 'Error updating quote' },
+      { error: 'Er is een fout opgetreden bij het updaten van de offerte' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { error } = await supabase
+      .from('quotes')
+      .delete()
+      .eq('id', params.id)
+
+    if (error) {
+      console.error('Delete error:', error)
+      return NextResponse.json(
+        { error: 'Fout bij verwijderen quote' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Quote succesvol verwijderd'
+    })
+  } catch (error) {
+    console.error('API error:', error)
+    return NextResponse.json(
+      { error: 'Er is een onverwachte fout opgetreden' },
       { status: 500 }
     )
   }

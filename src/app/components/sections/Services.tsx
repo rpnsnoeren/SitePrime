@@ -4,16 +4,6 @@ import type { FC } from 'react'
 const Services: FC = () => {
   const services = [
     {
-      title: 'AI Landingspagina\'s',
-      price: '€750',
-      features: [
-        'Modern design',
-        'AI-powered content',
-        'Snelle oplevering',
-        'SEO-optimalisatie'
-      ]
-    },
-    {
       title: 'Basis Websites',
       price: 'vanaf €1.000',
       features: [
@@ -21,6 +11,16 @@ const Services: FC = () => {
         'CMS integratie',
         'Contact formulieren',
         'Analytics'
+      ]
+    },
+    {
+      title: 'AI Landingspagina\'s',
+      price: '€750',
+      features: [
+        'Modern design',
+        'AI-powered content',
+        'Snelle oplevering',
+        'SEO-optimalisatie'
       ]
     },
     {

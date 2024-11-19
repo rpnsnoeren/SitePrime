@@ -1,37 +1,45 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Standaard waarden voor development
+const DEFAULT_SUPABASE_URL = 'https://ziqdiatxlteoqcedcvwx.supabase.co'
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcWRpYXR4bHRlb3FjZWRjdnd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE4Nzk3MTAsImV4cCI6MjA0NzQ1NTcxMH0.2EoemT9FznEulS2W6lLZYGnq2pAEnNBZixDzpcUJ8iI'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missende Supabase credentials. Zorg ervoor dat NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY zijn ingesteld in je .env.local file.'
-  )
+// Gebruik environment variables of fallback naar defaults
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
+
+// Singleton instantie met type
+let supabaseInstance: SupabaseClient | null = null
+
+export function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance && supabaseUrl && supabaseAnonKey) {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
+  }
+  if (!supabaseInstance) {
+    throw new Error('Supabase client could not be initialized')
+  }
+  return supabaseInstance
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-})
+// Exporteer de client
+export const supabase = getSupabaseClient()
 
-// Test de connectie en exporteer de functie zodat deze gebruikt kan worden
-export const testSupabaseConnection = async () => {
+// Test de connectie
+export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
-    const { error: testError } = await supabase
+    const { error } = await supabase
       .from('quotes')
       .select('count', { count: 'exact', head: true })
-
-    if (testError) {
-      console.error('Supabase connectie error:', testError.message)
-      return false
-    } 
-    console.log('Supabase connectie succesvol')
-    return true
+    
+    return !error
   } catch (error) {
-    console.error('Onverwachte Supabase error:', error)
+    console.error('Supabase connectie error:', error)
     return false
   }
 } 

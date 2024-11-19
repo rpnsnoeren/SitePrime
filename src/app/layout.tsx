@@ -1,16 +1,32 @@
-import { Analytics } from "@vercel/analytics/react"
-import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+import { Metadata } from 'next'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'SitePrime',
-  description: 'Premium Websites binnen Handbereik',
+  description: 'SitePrime Platform',
+  icons: {
+    icon: [
+      {
+        url: '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        url: '/icon.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        url: '/apple-touch-icon.png',
+        type: 'image/png',
+        sizes: '180x180',
+      },
+    ],
+  },
 }
 
 export default function RootLayout({
@@ -20,31 +36,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <head>
-        <Script
-          strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-4WLPH0VF0Z`}
-        />
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-        >
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-4WLPH0VF0Z');
-          `}
-        </Script>
-      </head>
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-          <Analytics />
-        </div>
+        <Navbar />
+        {children}
+        <Footer />
       </body>
     </html>
   )
