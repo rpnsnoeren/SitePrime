@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Controleer of de Supabase credentials beschikbaar zijn
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Skip middleware voor de login route
+  if (request.nextUrl.pathname === '/dashboard/login') {
+    return NextResponse.next()
+  }
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missende Supabase credentials in middleware')
-    return NextResponse.redirect(new URL('/error', request.url))
+  const token = request.cookies.get('token')
+  
+  // Redirect naar login als er geen token is
+  if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/dashboard/login', request.url))
   }
 
   return NextResponse.next()

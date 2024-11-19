@@ -13,38 +13,38 @@ export default function Hero() {
   }
 
   return (
-    <>
-      <section className="bg-gradient-to-b from-[#1E3D59] to-[#234567]">
-        <div className="max-w-screen-xl px-4 py-24 mx-auto lg:py-32">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="mb-6 text-5xl font-bold tracking-tight text-white lg:text-6xl">
-              Premium Websites <span className="text-[#FFB400]">binnen Handbereik</span>
-            </h1>
-            <p className="mb-8 text-lg text-gray-200 leading-relaxed">
-              Professionele websites op maat, aangedreven door AI-technologie en ontwikkeld door experts
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="px-8 py-3 text-[#1E3D59] bg-[#FF6B35] rounded-lg hover:bg-[#ff8555] transition-colors font-semibold"
-              >
-                Offerte Aanvragen
-              </button>
-              <button 
-                onClick={scrollToServices}
-                className="px-8 py-3 text-white border-2 border-[#FFB400] rounded-lg hover:bg-[#FFB400] hover:text-[#1E3D59] transition-colors"
-              >
-                Bekijk Diensten
-              </button>
-            </div>
+    <div className="bg-[#1E3D59] text-white min-h-[80vh] flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Premium Websites <span className="text-[#FFB400]">binnen</span>
+            <br />
+            <span className="text-[#FFB400]">Handbereik</span>
+          </h1>
+          <p className="text-lg md:text-xl mb-12 max-w-3xl mx-auto">
+            Professionele websites op maat, aangedreven door AI-technologie en ontwikkeld door experts
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => {
+                const element = document.getElementById('diensten')
+                element?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className="bg-[#FFB400] text-[#1E3D59] px-8 py-3 rounded-lg hover:bg-[#ffc333] transition-colors"
+            >
+              Bekijk Diensten
+            </button>
+            <button
+              onClick={() => {
+                // Hier kun je de quote modal openen
+              }}
+              className="bg-[#FF6B35] text-white px-8 py-3 rounded-lg hover:bg-[#ff8555] transition-colors"
+            >
+              Offerte Aanvragen
+            </button>
           </div>
         </div>
-      </section>
-
-      <QuoteModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-    </>
+      </div>
+    </div>
   )
 }

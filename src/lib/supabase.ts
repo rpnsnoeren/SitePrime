@@ -7,68 +7,39 @@ const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 // Gebruik environment variables of fallback naar defaults
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-// Singleton instanties met correcte types
+// Singleton instantie met type
 let supabaseInstance: SupabaseClient | null = null
-let supabaseAdminInstance: SupabaseClient | null = null
 
-function getSupabaseClient(): SupabaseClient {
-  if (!supabaseInstance) {
+export function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance && supabaseUrl && supabaseAnonKey) {
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true
-      },
-      db: {
-        schema: 'public'
       }
     })
+  }
+  if (!supabaseInstance) {
+    throw new Error('Supabase client could not be initialized')
   }
   return supabaseInstance
 }
 
-function getSupabaseAdminClient(): SupabaseClient {
-  if (!supabaseAdminInstance) {
-    supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      },
-      db: {
-        schema: 'public'
-      }
-    })
-  }
-  return supabaseAdminInstance
-}
-
-// Exporteer de clients
+// Exporteer de client
 export const supabase = getSupabaseClient()
-export const supabaseAdmin = getSupabaseAdminClient()
 
 // Test de connectie
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
-    const client = getSupabaseClient()
-    const { error } = await client
+    const { error } = await supabase
       .from('quotes')
       .select('count', { count: 'exact', head: true })
     
-    if (error) {
-      console.error('Supabase connectie error:', error.message)
-      return false
-    }
-    
-    return true
+    return !error
   } catch (error) {
-    console.error('Onverwachte Supabase error:', error)
+    console.error('Supabase connectie error:', error)
     return false
   }
-}
-
-// Helper functie om te controleren of de client correct is geïnitialiseerd
-export const isSupabaseConfigured = (): boolean => {
-  return Boolean(supabaseUrl && supabaseAnonKey)
 } 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export async function PATCH(
   request: Request,
@@ -7,35 +7,21 @@ export async function PATCH(
 ) {
   try {
     const data = await request.json()
-    console.log('Update quote data:', { id: params.id, ...data })
-
-    const { data: quote, error } = await supabaseAdmin
+    
+    const { data: quote, error } = await supabase
       .from('quotes')
-      .update({
-        ...data,
-        updated_at: new Date().toISOString()
-      })
+      .update(data)
       .eq('id', params.id)
       .select()
       .single()
 
-    if (error) {
-      console.error('Update error:', error)
-      return NextResponse.json(
-        { error: 'Fout bij updaten quote' },
-        { status: 500 }
-      )
-    }
+    if (error) throw error
 
-    return NextResponse.json({
-      success: true,
-      quote,
-      message: 'Quote succesvol bijgewerkt'
-    })
+    return NextResponse.json({ success: true, quote })
   } catch (error) {
-    console.error('API error:', error)
+    console.error('Server error:', error)
     return NextResponse.json(
-      { error: 'Er is een onverwachte fout opgetreden' },
+      { error: 'Er is een fout opgetreden bij het updaten van de offerte' },
       { status: 500 }
     )
   }
@@ -46,7 +32,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from('quotes')
       .delete()
       .eq('id', params.id)

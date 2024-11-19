@@ -1,51 +1,44 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json()
-
-    // Valideer input
-    if (!username || !password) {
+    // Controleer eerst of het request correct is
+    if (!request.body) {
       return NextResponse.json(
-        { error: 'Gebruikersnaam en wachtwoord zijn verplicht' },
+        { error: 'Geen data ontvangen' },
         { status: 400 }
       )
     }
 
-    // Controleer eerst of de users tabel bestaat
-    const { error: tableError } = await supabaseAdmin
-      .from('users')
-      .select('count', { count: 'exact', head: true })
+    const { username, password } = await request.json()
 
-    if (tableError) {
-      console.error('Users tabel error:', tableError)
+    // Valideer input
+    if (!username?.trim() || !password?.trim()) {
       return NextResponse.json(
-        { error: 'Database configuratie fout' },
-        { status: 500 }
+        { error: 'Username en wachtwoord zijn verplicht' },
+        { status: 400 }
       )
     }
 
-    // Haal gebruiker op uit Supabase
+    // Zoek gebruiker
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('username', username)
+      .eq('username', username.trim())
       .single()
 
-    if (userError) {
+    if (userError || !user) {
       console.error('User lookup error:', userError)
-      return NextResponse.json(
-        { error: 'Ongeldige inloggegevens' },
-        { status: 401 }
-      )
-    }
-
-    if (!user) {
       return NextResponse.json(
         { error: 'Gebruiker niet gevonden' },
         { status: 401 }
@@ -53,11 +46,19 @@ export async function POST(request: Request) {
     }
 
     // Verifieer wachtwoord
-    const isValidPassword = await bcrypt.compare(password, user.password)
-    if (!isValidPassword) {
+    try {
+      const isValidPassword = await bcrypt.compare(password, user.password)
+      if (!isValidPassword) {
+        return NextResponse.json(
+          { error: 'Ongeldig wachtwoord' },
+          { status: 401 }
+        )
+      }
+    } catch (bcryptError) {
+      console.error('Password verification error:', bcryptError)
       return NextResponse.json(
-        { error: 'Ongeldig wachtwoord' },
-        { status: 401 }
+        { error: 'Authenticatie fout' },
+        { status: 500 }
       )
     }
 
@@ -72,23 +73,26 @@ export async function POST(request: Request) {
       { expiresIn: '1d' }
     )
 
-    // Stel cookie headers in
-    const response = NextResponse.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role
-      }
-    })
+    // Creëer response met cookie
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      },
+      { status: 200 }
+    )
 
-    // Voeg cookies toe aan response
+    // Set HTTP-only cookie
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 // 1 dag
+      sameSite: 'strict',
+      maxAge: 86400, // 1 day
+      path: '/' // Belangrijk: zorg dat de cookie beschikbaar is voor hele site
     })
 
     return response
@@ -96,7 +100,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Auth error:', error)
     return NextResponse.json(
-      { error: 'Er is een fout opgetreden bij het inloggen' },
+      { 
+        error: 'Er is een fout opgetreden bij het inloggen',
+        details: error instanceof Error ? error.message : 'Onbekende fout'
+      },
       { status: 500 }
     )
   }
