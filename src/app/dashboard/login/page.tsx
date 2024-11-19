@@ -16,7 +16,8 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+    setIsLoading(true)
+
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -32,7 +33,6 @@ export default function Login() {
       const data = await res.json()
 
       if (data.success) {
-        // Sla de Supabase session op
         Cookies.set('session', data.session.access_token, { 
           expires: 1,
           path: '/',
@@ -48,6 +48,8 @@ export default function Login() {
     } catch (err) {
       console.error('Login error:', err)
       setError('Er is een fout opgetreden bij het inloggen')
+    } finally {
+      setIsLoading(false)
     }
   }
 

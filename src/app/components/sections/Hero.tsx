@@ -3,7 +3,7 @@ import { useState } from 'react'
 import QuoteModal from '../modals/QuoteModal'
 
 export default function Hero() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const scrollToServices = () => {
     const servicesSection = document.getElementById('services')
@@ -28,7 +28,7 @@ export default function Hero() {
         
         <div className="flex flex-wrap justify-center gap-4">
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setShowModal(true)}
             className="px-8 py-3 text-[#1E3D59] bg-[#FF6B35] rounded-lg hover:bg-[#ff8555] transition-colors font-semibold"
           >
             Offerte Aanvragen
@@ -41,6 +41,11 @@ export default function Hero() {
           </button>
         </div>
       </div>
+
+      <QuoteModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+      />
     </section>
   )
 }
