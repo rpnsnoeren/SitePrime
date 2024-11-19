@@ -1,32 +1,16 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  try {
-    const res = NextResponse.next()
-    const supabase = createMiddlewareClient(
-      { req: request, res },
-      {
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-        options: {
-          db: {
-            schema: 'public'
-          },
-          global: {
-            headers: { 'x-my-custom-header': 'my-app-name' },
-          }
-        }
-      }
-    )
+  const session = request.cookies.get('session')
+  const isLoginPage = request.nextUrl.pathname === '/dashboard/login'
 
-    await supabase.auth.getSession()
-    return res
-  } catch (e) {
-    console.error('Middleware error:', e)
+  // Alleen redirecten als er geen sessie is
+  if (!session && !isLoginPage) {
     return NextResponse.redirect(new URL('/dashboard/login', request.url))
   }
+
+  return NextResponse.next()
 }
 
 export const config = {
