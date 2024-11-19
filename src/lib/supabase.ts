@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Standaard waarden voor development
 const DEFAULT_SUPABASE_URL = 'https://ziqdiatxlteoqcedcvwx.supabase.co'
@@ -9,11 +9,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-// Singleton instantie
-let supabaseInstance: any = null
-let supabaseAdminInstance: any = null
+// Singleton instanties met correcte types
+let supabaseInstance: SupabaseClient | null = null
+let supabaseAdminInstance: SupabaseClient | null = null
 
-function getSupabaseClient() {
+function getSupabaseClient(): SupabaseClient {
   if (!supabaseInstance) {
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
@@ -29,7 +29,7 @@ function getSupabaseClient() {
   return supabaseInstance
 }
 
-function getSupabaseAdminClient() {
+function getSupabaseAdminClient(): SupabaseClient {
   if (!supabaseAdminInstance) {
     supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -49,7 +49,7 @@ export const supabase = getSupabaseClient()
 export const supabaseAdmin = getSupabaseAdminClient()
 
 // Test de connectie
-export const testSupabaseConnection = async () => {
+export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
     const client = getSupabaseClient()
     const { error } = await client
@@ -69,6 +69,6 @@ export const testSupabaseConnection = async () => {
 }
 
 // Helper functie om te controleren of de client correct is geïnitialiseerd
-export const isSupabaseConfigured = () => {
+export const isSupabaseConfigured = (): boolean => {
   return Boolean(supabaseUrl && supabaseAnonKey)
 } 
