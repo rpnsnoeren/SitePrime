@@ -1,35 +1,58 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ziqdiatxlteoqcedcvwx.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcWRpYXR4bHRlb3FjZWRjdnd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE4Nzk3MTAsImV4cCI6MjA0NzQ1NTcxMH0.2EoemT9FznEulS2W6lLZYGnq2pAEnNBZixDzpcUJ8iI'
+// Standaard waarden voor development
+const DEFAULT_SUPABASE_URL = 'https://ziqdiatxlteoqcedcvwx.supabase.co'
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcWRpYXR4bHRlb3FjZWRjdnd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE4Nzk3MTAsImV4cCI6MjA0NzQ1NTcxMH0.2EoemT9FznEulS2W6lLZYGnq2pAEnNBZixDzpcUJ8iI'
+
+// Gebruik environment variables of fallback naar defaults
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-// Client voor frontend gebruik
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-})
+// Singleton instantie
+let supabaseInstance: any = null
+let supabaseAdminInstance: any = null
 
-// Admin client voor API routes (alleen server-side)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+function getSupabaseClient() {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      },
+      db: {
+        schema: 'public'
+      }
+    })
   }
-})
+  return supabaseInstance
+}
+
+function getSupabaseAdminClient() {
+  if (!supabaseAdminInstance) {
+    supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      db: {
+        schema: 'public'
+      }
+    })
+  }
+  return supabaseAdminInstance
+}
+
+// Exporteer de clients
+export const supabase = getSupabaseClient()
+export const supabaseAdmin = getSupabaseAdminClient()
 
 // Test de connectie
 export const testSupabaseConnection = async () => {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missende Supabase credentials')
-    return false
-  }
-
   try {
-    const { error } = await supabase
+    const client = getSupabaseClient()
+    const { error } = await client
       .from('quotes')
       .select('count', { count: 'exact', head: true })
     
@@ -43,4 +66,9 @@ export const testSupabaseConnection = async () => {
     console.error('Onverwachte Supabase error:', error)
     return false
   }
+}
+
+// Helper functie om te controleren of de client correct is geïnitialiseerd
+export const isSupabaseConfigured = () => {
+  return Boolean(supabaseUrl && supabaseAnonKey)
 } 
