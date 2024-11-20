@@ -18,6 +18,7 @@ interface Freelancer {
   experience: string
   rate: string
   availability: string
+  portfolio: string
 }
 
 export default function FreelancersPage() {
@@ -120,12 +121,15 @@ export default function FreelancersPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
                       Beschikbaarheid
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                      Portfolio
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={9} className="px-6 py-4 whitespace-nowrap text-center">
+                      <td colSpan={10} className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                         </div>
@@ -133,7 +137,7 @@ export default function FreelancersPage() {
                     </tr>
                   ) : freelancers.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                      <td colSpan={10} className="px-6 py-4 whitespace-nowrap text-center text-gray-500">
                         Geen freelancers gevonden
                       </td>
                     </tr>
@@ -191,6 +195,11 @@ export default function FreelancersPage() {
                             {freelancer.availability}
                           </div>
                         </td>
+                        <td className="px-6 py-4 hidden xl:table-cell">
+                          <div className="text-sm text-gray-500">
+                            {freelancer.portfolio}
+                          </div>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -216,6 +225,7 @@ export default function FreelancersPage() {
             setSelectedFreelancer(null)
           }}
           freelancer={selectedFreelancer}
+          mode="view"
         />
       )}
     </div>

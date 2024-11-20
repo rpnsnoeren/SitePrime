@@ -20,7 +20,7 @@ export default function DashboardLayout({
     if (!token && pathname !== '/dashboard/login') {
       router.push('/dashboard/login')
     }
-  }, [])
+  }, [pathname, router])
 
   if (pathname === '/dashboard/login') {
     return <>{children}</>
