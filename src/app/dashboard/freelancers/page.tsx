@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import FreelancerDetailModal from '../components/FreelancerDetailModal'
+import AddFreelancerModal from '../components/AddFreelancerModal'
 
 interface Freelancer {
   id: string
@@ -22,28 +23,33 @@ export default function FreelancersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  const fetchFreelancers = async () => {
+    try {
+      const response = await fetch('/api/freelancers')
+      if (!response.ok) {
+        throw new Error('Fout bij het ophalen van freelancers')
+      }
+      const data = await response.json()
+      console.log('Opgehaalde data:', data)
+      setFreelancers(data)
+    } catch (err) {
+      console.error('Fout:', err)
+      setError(err instanceof Error ? err.message : 'Er is een fout opgetreden')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchFreelancers = async () => {
-      try {
-        const response = await fetch('/api/freelancers')
-        if (!response.ok) {
-          throw new Error('Fout bij het ophalen van freelancers')
-        }
-        const data = await response.json()
-        console.log('Opgehaalde data:', data) // Debug log
-        setFreelancers(data)
-      } catch (err) {
-        console.error('Fout:', err) // Debug log
-        setError(err instanceof Error ? err.message : 'Er is een fout opgetreden')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchFreelancers()
   }, [])
+
+  const handleAddSuccess = () => {
+    fetchFreelancers()
+  }
 
   if (loading) {
     return (
@@ -67,7 +73,7 @@ export default function FreelancersPage() {
         <h1 className="text-2xl font-bold">Freelancers Overzicht</h1>
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => {/* Implementeer toevoegen */}}
+          onClick={() => setIsAddModalOpen(true)}
         >
           Freelancer Toevoegen
         </button>
@@ -80,7 +86,14 @@ export default function FreelancersPage() {
       ) : (
         <div className="space-y-4">
           {freelancers.map((freelancer) => (
-            <div key={freelancer.id} className="bg-white rounded-lg shadow p-6">
+            <div
+              key={freelancer.id}
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => {
+                setSelectedFreelancer(freelancer)
+                setIsDetailModalOpen(true)
+              }}
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-lg font-medium">{freelancer.name}</h3>
@@ -108,8 +121,8 @@ export default function FreelancersPage() {
                 </div>
                 <div>
                   <p className="text-sm">
-                    <span className="font-medium">Tarief:</span>{' '}
-                    €{freelancer.rate}
+                    <span className="font-medium">Uurtarief:</span>{' '}
+                    {freelancer.rate}
                   </p>
                   <p className="text-sm">
                     <span className="font-medium">Beschikbaarheid:</span>{' '}
@@ -118,19 +131,9 @@ export default function FreelancersPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  Lid sinds: {format(new Date(freelancer.created_at), 'd MMM yyyy', { locale: nl })}
-                </span>
-                <button 
-                  className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                  onClick={() => {
-                    setSelectedFreelancer(freelancer)
-                    setIsModalOpen(true)
-                  }}
-                >
-                  Bewerken
-                </button>
+              <div className="mt-4 text-xs text-gray-500">
+                Toegevoegd op:{' '}
+                {format(new Date(freelancer.created_at), 'dd MMMM yyyy', { locale: nl })}
               </div>
             </div>
           ))}
@@ -139,15 +142,20 @@ export default function FreelancersPage() {
 
       {selectedFreelancer && (
         <FreelancerDetailModal
-          freelancer={selectedFreelancer}
-          isOpen={isModalOpen}
+          isOpen={isDetailModalOpen}
           onClose={() => {
-            setIsModalOpen(false)
+            setIsDetailModalOpen(false)
             setSelectedFreelancer(null)
           }}
-          mode="edit"
+          freelancer={selectedFreelancer}
         />
       )}
+
+      <AddFreelancerModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   )
-} 
+}
