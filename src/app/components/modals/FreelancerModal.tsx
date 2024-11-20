@@ -1,223 +1,189 @@
 'use client'
-import { useState } from 'react'
 
-interface FormData {
-  name: string
-  email: string
-  skills: string[]
-  experience: string
-  availability: string
-  rate: string
-  portfolio: string
+import { useForm } from 'react-hook-form'
+import { Dialog } from '@headlessui/react'
+import { supabase } from '@/lib/supabase'
+import { logActivity, formatFreelancerActivity } from '@/lib/activities'
+
+interface FreelancerModalProps {
+  isOpen: boolean
+  onClose: () => void
 }
 
-export default function FreelancerModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    skills: [],
-    experience: '',
-    availability: '',
-    rate: '',
-    portfolio: ''
-  })
-  const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+interface FreelancerFormData {
+  name: string
+  email: string
+  phone: string
+  expertise: string
+  experience: string
+  rate: string
+  availability: string
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
-    
+export default function FreelancerModal({ isOpen, onClose }: FreelancerModalProps) {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FreelancerFormData>()
+
+  const onSubmit = async (data: FreelancerFormData) => {
     try {
-      console.log('Versturen data:', formData) // Debug logging
+      const { data: freelancer, error } = await supabase
+        .from('freelancers')
+        .insert([{
+          ...data,
+          status: 'pending'
+        }])
+        .select()
+        .single()
 
-      const response = await fetch('/api/freelancers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      if (error) throw error
+
+      await logActivity({
+        description: formatFreelancerActivity('heeft zich aangemeld', freelancer),
+        type: 'freelancer',
+        related_id: freelancer.id,
+        related_type: 'freelancers'
       })
 
-      const data = await response.json()
-      console.log('Response van server:', data) // Debug logging
-
-      if (!response.ok) {
-        throw new Error(data.error || data.details || 'Er is iets misgegaan')
-      }
-
-      // Toon success message
-      alert('Registratie succesvol!')
+      reset()
       onClose()
-      setFormData({
-        name: '',
-        email: '',
-        skills: [],
-        experience: '',
-        availability: '',
-        rate: '',
-        portfolio: ''
-      })
     } catch (error) {
-      console.error('Error details:', error) // Debug logging
-      setError(error instanceof Error ? error.message : 'Er is een onverwachte fout opgetreden')
-    } finally {
-      setIsSubmitting(false)
+      console.error('Error:', error)
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Freelancer Registratie</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto max-w-lg rounded-lg bg-white p-6 w-full">
+          <Dialog.Title className="text-lg font-semibold mb-4">
+            Nieuwe Freelancer
+          </Dialog.Title>
 
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Naam
+              </label>
+              <input
+                type="text"
+                {...register('name', { required: 'Naam is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Naam */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Naam
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                {...register('email', { 
+                  required: 'Email is verplicht',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Ongeldig email adres'
+                  }
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Telefoonnummer
+              </label>
+              <input
+                type="tel"
+                {...register('phone', { required: 'Telefoonnummer is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
 
-          {/* Skills */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Skills
-            </label>
-            <select
-              multiple
-              value={formData.skills}
-              onChange={(e) => {
-                const values = Array.from(e.target.selectedOptions, option => option.value)
-                setFormData({ ...formData, skills: values })
-              }}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="Frontend Development">Frontend Development</option>
-              <option value="Backend Development">Backend Development</option>
-              <option value="Full Stack Development">Full Stack Development</option>
-              <option value="UI/UX Design">UI/UX Design</option>
-              <option value="Mobile Development">Mobile Development</option>
-            </select>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Expertise
+              </label>
+              <input
+                type="text"
+                {...register('expertise', { required: 'Expertise is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.expertise && (
+                <p className="mt-1 text-sm text-red-600">{errors.expertise.message}</p>
+              )}
+            </div>
 
-          {/* Ervaring */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ervaring
-            </label>
-            <select
-              value={formData.experience}
-              onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Selecteer ervaring</option>
-              <option value="0-2 jaar">0-2 jaar</option>
-              <option value="2-5 jaar">2-5 jaar</option>
-              <option value="5+ jaar">5+ jaar</option>
-            </select>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Ervaring (jaren)
+              </label>
+              <input
+                type="text"
+                {...register('experience', { required: 'Ervaring is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.experience && (
+                <p className="mt-1 text-sm text-red-600">{errors.experience.message}</p>
+              )}
+            </div>
 
-          {/* Beschikbaarheid */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Beschikbaarheid
-            </label>
-            <select
-              value={formData.availability}
-              onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Selecteer beschikbaarheid</option>
-              <option value="Fulltime">Fulltime</option>
-              <option value="Parttime">Parttime</option>
-              <option value="Freelance">Freelance</option>
-            </select>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Uurtarief (€)
+              </label>
+              <input
+                type="text"
+                {...register('rate', { required: 'Uurtarief is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              {errors.rate && (
+                <p className="mt-1 text-sm text-red-600">{errors.rate.message}</p>
+              )}
+            </div>
 
-          {/* Uurtarief */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Uurtarief
-            </label>
-            <select
-              value={formData.rate}
-              onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Selecteer uurtarief</option>
-              <option value="€30-€50 per uur">€30-€50 per uur</option>
-              <option value="€50-€75 per uur">€50-€75 per uur</option>
-              <option value="€75-€100 per uur">€75-€100 per uur</option>
-              <option value="> €100 per uur">{'>'} €100 per uur</option>
-            </select>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Beschikbaarheid
+              </label>
+              <input
+                type="text"
+                {...register('availability', { required: 'Beschikbaarheid is verplicht' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="bijv. 24 uur per week, vanaf maart 2024"
+              />
+              {errors.availability && (
+                <p className="mt-1 text-sm text-red-600">{errors.availability.message}</p>
+              )}
+            </div>
 
-          {/* Portfolio URL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Portfolio URL (optioneel)
-            </label>
-            <input
-              type="url"
-              value={formData.portfolio}
-              onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
-              className="w-full p-2 border rounded-md"
-              placeholder="https://..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full ${
-              isSubmitting 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700'
-            } text-white py-2 px-4 rounded-md transition-colors`}
-          >
-            {isSubmitting ? 'Bezig met registreren...' : 'Registreren'}
-          </button>
-        </form>
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-500"
+              >
+                Annuleren
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Opslaan
+              </button>
+            </div>
+          </form>
+        </Dialog.Panel>
       </div>
-    </div>
+    </Dialog>
   )
-} 
+}

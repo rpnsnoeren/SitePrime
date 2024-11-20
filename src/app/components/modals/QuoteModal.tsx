@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { logActivity } from '@/lib/activities'
 
 interface FormData {
   // Stap 1: Basisinformatie
@@ -197,12 +199,40 @@ const Input = ({
   </div>
 )
 
+// Voeg deze nieuwe SuccessMessage component toe
+const SuccessMessage = ({ onClose }: { onClose: () => void }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+      <div className="text-center">
+        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+          <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
+          Offerte aanvraag succesvol verstuurd!
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Wij nemen zo spoedig mogelijk contact met u op om uw wensen te bespreken.
+        </p>
+        <button
+          onClick={onClose}
+          className="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Sluiten
+        </button>
+      </div>
+    </div>
+  </div>
+)
+
 export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCustomIndustry, setShowCustomIndustry] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const totalSteps = 10
 
@@ -241,109 +271,74 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
     setIsSubmitting(true)
 
     try {
-      // Controleer of we op de laatste stap zijn
-      if (currentStep !== totalSteps) {
-        setError('Vul eerst alle stappen in')
-        return
-      }
-
-      // Valideer verplichte velden voor bedrijfsinformatie
+      // Valideer verplichte velden
       if (!formData.companyName?.trim()) {
         setError('Vul de bedrijfsnaam in')
-        setIsSubmitting(false)
         return
       }
 
-      // Valideer contactgegevens
-      if (!formData.contactPerson?.trim()) {
-        setError('Vul de naam van de contactpersoon in')
-        setIsSubmitting(false)
+      if (!formData.email?.trim() || !formData.phone?.trim()) {
+        setError('Vul alle contactgegevens in')
         return
       }
 
-      if (!formData.email?.trim()) {
-        setError('Vul het e-mailadres in')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Valideer e-mailadres formaat
+      // Valideer e-mailadres
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(formData.email.trim())) {
         setError('Vul een geldig e-mailadres in')
-        setIsSubmitting(false)
         return
       }
 
-      if (!formData.phone?.trim()) {
-        setError('Vul het telefoonnummer in')
-        setIsSubmitting(false)
-        return
-      }
+      const { data, error } = await supabase
+        .from('quotes')
+        .insert([
+          {
+            company_name: formData.companyName.trim(),
+            industry: formData.industry,
+            desired_domain: formData.desiredDomain,
+            primary_goal: formData.primaryGoal,
+            secondary_goals: formData.secondaryGoals,
+            target_audience: formData.targetAudience,
+            geographic_focus: formData.geographicFocus,
+            features: formData.features,
+            color_scheme: formData.colorScheme,
+            style: formData.style,
+            website_examples: formData.websiteExamples,
+            number_of_pages: formData.numberOfPages,
+            has_own_content: formData.hasOwnContent,
+            needs_content_support: formData.needsContentSupport,
+            seo_requirements: formData.seoRequirements,
+            budget: formData.budget,
+            deadline: formData.deadline,
+            maintenance_contract: formData.maintenanceContract,
+            needs_training: formData.needsTraining,
+            contact_person: formData.contactPerson,
+            email: formData.email.trim().toLowerCase(),
+            phone: formData.phone.trim(),
+            status: 'pending'
+          }
+        ])
+        .select()
 
-      // Valideer telefoonnummer (basis validatie)
-      const phoneRegex = /^[0-9\-\+\(\)\s]{10,}$/
-      if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-        setError('Vul een geldig telefoonnummer in')
-        setIsSubmitting(false)
-        return
-      }
+      if (error) throw error
 
-      // Maak een schoon data object
-      const cleanData = {
-        company_name: formData.companyName.trim(),
-        industry: formData.industry || '',
-        desired_domain: formData.desiredDomain || '',
-        custom_industry: formData.customIndustry || '',
-        primary_goal: formData.primaryGoal || '',
-        secondary_goals: Array.isArray(formData.secondaryGoals) ? formData.secondaryGoals : [],
-        target_age_range: formData.targetAudience?.ageRange || '',
-        target_gender: formData.targetAudience?.gender || '',
-        target_interests: Array.isArray(formData.targetAudience?.interests) ? formData.targetAudience.interests : [],
-        geographic_focus: formData.geographicFocus || '',
-        features: Array.isArray(formData.features) ? formData.features : [],
-        colorscheme: formData.colorScheme || '',
-        style: formData.style || '',
-        website_examples: formData.websiteExamples || '',
-        number_of_pages: formData.numberOfPages || '',
-        has_own_content: Boolean(formData.hasOwnContent),
-        needs_content_support: Boolean(formData.needsContentSupport),
-        seo_requirements: Array.isArray(formData.seoRequirements) ? formData.seoRequirements : [],
-        budget: formData.budget || '',
-        deadline: formData.deadline || '',
-        maintenance_contract: Boolean(formData.maintenanceContract),
-        needs_training: Boolean(formData.needsTraining),
-        contact_person: formData.contactPerson.trim(),
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.trim()
-      }
-
-      console.log('Versturen data:', cleanData)
-
-      const response = await fetch('/api/quotes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cleanData),
+      // Log de activiteit
+      await logActivity({
+        description: `Nieuwe offerte aanvraag van ${formData.companyName}`,
+        type: 'quote',
+        related_id: data[0].id,
+        related_type: 'quotes'
       })
 
-      const data = await response.json()
+      setShowSuccess(true)
+      setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 3000)
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Er is iets misgegaan')
-      }
-
-      // Toon success message en sluit modal
-      alert('Offerte aanvraag succesvol verstuurd!')
-      onClose()
-      
-      // Reset form data
-      setFormData(INITIAL_FORM_DATA)
-
-    } catch (error) {
-      console.error('Error bij versturen:', error)
-      setError(error instanceof Error ? error.message : 'Er is een onverwachte fout opgetreden')
+    } catch (error: any) {
+      console.error('Error:', error)
+      setError(error.message || 'Er is een onverwachte fout opgetreden')
     } finally {
       setIsSubmitting(false)
     }
@@ -869,6 +864,14 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
   }
 
   if (!isOpen) return null
+  
+  // Toon de success message als showSuccess true is
+  if (showSuccess) {
+    return <SuccessMessage onClose={() => {
+      setShowSuccess(false)
+      onClose()
+    }} />
+  }
 
   const stepInfo = getStepInfo(currentStep)
 

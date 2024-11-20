@@ -10,6 +10,8 @@
     "create-admin": "ts-node -r tsconfig-paths/register src/scripts/createAdmin.ts"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^5.22.0",
     "@replit/database": "^2.0.5",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
@@ -27,7 +29,8 @@
     "next": "14.0.0",
     "nodemailer": "^6.9.16",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-hook-form": "^7.53.2"
   },
   "devDependencies": {
     "@supabase/auth-helpers-react": "^0.4.2",
