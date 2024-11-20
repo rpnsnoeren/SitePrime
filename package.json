@@ -10,6 +10,7 @@
     "create-admin": "ts-node -r tsconfig-paths/register src/scripts/createAdmin.ts"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^5.22.0",
     "@replit/database": "^2.0.5",
     "@supabase/auth-helpers-nextjs": "^0.8.7",

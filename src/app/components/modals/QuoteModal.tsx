@@ -197,12 +197,40 @@ const Input = ({
   </div>
 )
 
+// Voeg deze nieuwe SuccessMessage component toe
+const SuccessMessage = ({ onClose }: { onClose: () => void }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+      <div className="text-center">
+        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+          <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
+          Offerte aanvraag succesvol verstuurd!
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Wij nemen zo spoedig mogelijk contact met u op om uw wensen te bespreken.
+        </p>
+        <button
+          onClick={onClose}
+          className="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Sluiten
+        </button>
+      </div>
+    </div>
+  </div>
+)
+
 export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCustomIndustry, setShowCustomIndustry] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const totalSteps = 10
 
@@ -334,12 +362,17 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
         throw new Error(data.error || 'Er is iets misgegaan')
       }
 
-      // Toon success message en sluit modal
-      alert('Offerte aanvraag succesvol verstuurd!')
-      onClose()
+      // Vervang de alert door de nieuwe success state
+      setShowSuccess(true)
       
       // Reset form data
       setFormData(INITIAL_FORM_DATA)
+      
+      // Sluit het modal na 3 seconden
+      setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 3000)
 
     } catch (error) {
       console.error('Error bij versturen:', error)
@@ -869,6 +902,14 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
   }
 
   if (!isOpen) return null
+  
+  // Toon de success message als showSuccess true is
+  if (showSuccess) {
+    return <SuccessMessage onClose={() => {
+      setShowSuccess(false)
+      onClose()
+    }} />
+  }
 
   const stepInfo = getStepInfo(currentStep)
 
