@@ -27,7 +27,7 @@ export default function FreelancerPage() {
         {/* JotForm Script en Container */}
         <div id="jotform-container" className="mb-8">
           <Script
-            src="https://form.jotform.com/jsform/243305849896371"
+            src="https://form.jotform.com/jsform/243307168507356"
             strategy="afterInteractive"
           />
         </div>
