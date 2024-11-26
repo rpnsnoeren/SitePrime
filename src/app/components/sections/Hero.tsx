@@ -1,10 +1,8 @@
 'use client'
 import { useState } from 'react'
-import QuoteModal from '../modals/QuoteModal'
+import Link from 'next/link'
 
 export default function Hero() {
-  const [showModal, setShowModal] = useState(false)
-
   const scrollToServices = () => {
     const servicesSection = document.getElementById('services')
     if (servicesSection) {
@@ -27,12 +25,12 @@ export default function Hero() {
         </p>
         
         <div className="flex flex-wrap justify-center gap-4">
-          <button 
-            onClick={() => setShowModal(true)}
+          <Link 
+            href="/offerte"
             className="px-8 py-3 text-[#1E3D59] bg-[#FF6B35] rounded-lg hover:bg-[#ff8555] transition-colors font-semibold"
           >
             Offerte Aanvragen
-          </button>
+          </Link>
           <button 
             onClick={scrollToServices}
             className="px-8 py-3 text-white border-2 border-[#FFB400] rounded-lg hover:bg-[#FFB400] hover:text-[#1E3D59] transition-colors"
@@ -41,11 +39,6 @@ export default function Hero() {
           </button>
         </div>
       </div>
-
-      <QuoteModal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-      />
     </section>
   )
 }

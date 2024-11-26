@@ -1,4 +1,4 @@
-import React from 'react'
+import Link from 'next/link'
 import type { FC } from 'react'
 
 const Services: FC = () => {
@@ -32,29 +32,6 @@ const Services: FC = () => {
         'API integraties',
         'Schaalbaarheid'
       ]
-    }
-  ]
-
-  const benefits = [
-    {
-      title: 'Snelle oplevering',
-      description: 'Binnen 2 weken een professionele website'
-    },
-    {
-      title: 'Vaste prijzen',
-      description: 'Geen verrassingen achteraf, transparante tarieven'
-    },
-    {
-      title: 'Kwaliteitsgarantie',
-      description: 'Niet tevreden? Geld terug garantie'
-    },
-    {
-      title: 'AI-powered solutions',
-      description: 'Innovatieve technologie voor optimale resultaten'
-    },
-    {
-      title: 'Expert freelancers',
-      description: 'Ervaren professionals voor elk project'
     }
   ]
 
@@ -93,52 +70,14 @@ const Services: FC = () => {
                   </li>
                 ))}
               </ul>
-              <button className="w-full mt-8 px-6 py-3 text-white bg-[#1E3D59] rounded-lg hover:bg-[#2a5580] transition-colors">
-                Meer Info
-              </button>
+              <Link 
+                href="/offerte"
+                className="block w-full mt-8 px-6 py-3 text-center text-white bg-[#1E3D59] rounded-lg hover:bg-[#2a5580] transition-colors"
+              >
+                Offerte Aanvragen
+              </Link>
             </div>
           ))}
-        </div>
-
-        {/* Unique Benefits */}
-        <div className="mt-20">
-          <h3 className="text-2xl font-bold text-[#1E3D59] text-center mb-12">
-            Unieke Voordelen
-          </h3>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {benefits.map((benefit, index) => (
-              <div 
-                key={index}
-                className="flex items-start space-x-4 p-6 bg-gradient-to-br from-[#1E3D59]/5 to-transparent rounded-xl hover:shadow-md transition-shadow"
-              >
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-[#1E3D59] flex items-center justify-center">
-                    <svg 
-                      className="w-6 h-6 text-[#FFB400]" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-[#1E3D59] mb-2">
-                    {benefit.title}
-                  </h4>
-                  <p className="text-gray-600">
-                    {benefit.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>

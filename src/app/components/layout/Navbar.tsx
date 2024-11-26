@@ -3,12 +3,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import dynamic from 'next/dynamic'
-
-// Dynamisch importeren van de QuoteModal component
-const QuoteModal = dynamic(() => import('../modals/QuoteModal'), {
-  ssr: false
-})
 
 const Navbar = () => {
   const pathname = usePathname()
@@ -73,28 +67,54 @@ const Navbar = () => {
           <div className="hidden md:flex md:items-center md:space-x-4">
             <Link
               href="/offerte"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-[#FF6B35] text-white rounded hover:bg-[#ff8555] transition-colors"
             >
               Offerte Aanvragen
             </Link>
             <button
               onClick={() => scrollToSection('freelancers')}
-              className="px-4 py-2 bg-[#FFB400] text-white rounded hover:bg-[#ffc333] transition-colors"
+              className="px-4 py-2 text-white hover:text-[#FFB400] transition-colors"
             >
               Word Freelancer
             </button>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white hover:text-[#FFB400]"
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-[#FFB400] focus:outline-none"
             >
-              <span className="sr-only">Open menu</span>
-              {/* Hamburger icon */}
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <span className="sr-only">Open hoofdmenu</span>
+              {/* Menu Icon */}
+              <svg
+                className={`${isMobileMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              {/* Close Icon */}
+              <svg
+                className={`${isMobileMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -124,7 +144,7 @@ const Navbar = () => {
               </button>
               <Link
                 href="/offerte"
-                className="block w-full px-4 py-2 text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                className="block w-full px-4 py-2 text-center text-sm font-medium text-white bg-[#FF6B35] hover:bg-[#ff8555] rounded transition-colors"
               >
                 Offerte Aanvragen
               </Link>
