@@ -289,7 +289,12 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
         return
       }
 
-      const { data, error } = await supabase
+      // Voeg error logging toe
+      if (!supabase) {
+        throw new Error('Supabase client is niet geïnitialiseerd')
+      }
+
+      const { data, error: supabaseError } = await supabase
         .from('quotes')
         .insert([
           {
@@ -318,17 +323,30 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
             status: 'pending'
           }
         ])
-        .select()
+        .select('*')
+        .single()
 
-      if (error) throw error
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError)
+        throw new Error(`Database fout: ${supabaseError.message}`)
+      }
+
+      if (!data) {
+        throw new Error('Geen data ontvangen van database')
+      }
 
       // Log de activiteit
-      await logActivity({
-        description: `Nieuwe offerte aanvraag van ${formData.companyName}`,
-        type: 'quote',
-        related_id: data[0].id,
-        related_type: 'quotes'
-      })
+      try {
+        await logActivity({
+          description: `Nieuwe offerte aanvraag van ${formData.companyName}`,
+          type: 'quote',
+          related_id: data.id,
+          related_type: 'quotes'
+        })
+      } catch (activityError) {
+        console.error('Activity log error:', activityError)
+        // Niet fataal, dus we gaan door
+      }
 
       setShowSuccess(true)
       setTimeout(() => {
@@ -337,7 +355,7 @@ export default function QuoteModal({ isOpen, onClose }: { isOpen: boolean, onClo
       }, 3000)
 
     } catch (error: any) {
-      console.error('Error:', error)
+      console.error('Submit error:', error)
       setError(error.message || 'Er is een onverwachte fout opgetreden')
     } finally {
       setIsSubmitting(false)
