@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 
@@ -12,7 +13,7 @@ const QuoteModal = dynamic(() => import('../modals/QuoteModal'), {
 const Navbar = () => {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -70,12 +71,12 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <button
-              onClick={() => setIsQuoteModalOpen(true)}
-              className="px-4 py-2 bg-[#FF6B35] text-white rounded hover:bg-[#ff8555] transition-colors"
+            <Link
+              href="/offerte"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Offerte Aanvragen
-            </button>
+            </Link>
             <button
               onClick={() => scrollToSection('freelancers')}
               className="px-4 py-2 bg-[#FFB400] text-white rounded hover:bg-[#ffc333] transition-colors"
@@ -121,15 +122,12 @@ const Navbar = () => {
               >
                 Over Ons
               </button>
-              <button
-                onClick={() => {
-                  setIsQuoteModalOpen(true)
-                  setIsMobileMenuOpen(false)
-                }}
-                className="block w-full text-left px-3 py-2 text-white hover:text-[#FFB400]"
+              <Link
+                href="/offerte"
+                className="block w-full px-4 py-2 text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
               >
                 Offerte Aanvragen
-              </button>
+              </Link>
               <button
                 onClick={() => {
                   scrollToSection('freelancers')
@@ -143,12 +141,6 @@ const Navbar = () => {
           </div>
         )}
       </div>
-
-      {/* Quote Modal */}
-      <QuoteModal
-        isOpen={isQuoteModalOpen}
-        onClose={() => setIsQuoteModalOpen(false)}
-      />
     </nav>
   )
 }
