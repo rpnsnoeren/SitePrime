@@ -1,13 +1,11 @@
 'use client'
 import Link from 'next/link'
-import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 const Navbar = () => {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
   
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
