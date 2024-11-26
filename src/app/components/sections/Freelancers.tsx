@@ -1,16 +1,9 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import type { FC } from 'react'
-import dynamic from 'next/dynamic'
-
-// Dynamisch importeren van de FreelancerModal component
-const FreelancerModal = dynamic(() => import('../modals/FreelancerModal'), {
-  ssr: false // Dit voorkomt hydration issues
-})
+import Link from 'next/link'
 
 const Freelancers: FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
   const benefits = [
     {
       title: 'Vaste stroom aan leads',
@@ -100,21 +93,14 @@ const Freelancers: FC = () => {
         </div>
 
         <div className="text-center">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-8 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8555] transition-colors font-semibold"
+          <Link
+            href="/freelancer"
+            className="px-8 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8555] transition-colors font-semibold inline-block"
           >
             Start als SitePrime Professional
-          </button>
+          </Link>
         </div>
       </div>
-
-      {isModalOpen && (
-        <FreelancerModal 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
     </section>
   )
 }

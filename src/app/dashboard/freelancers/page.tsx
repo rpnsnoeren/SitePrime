@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import FreelancerModal from '@/app/components/modals/FreelancerModal'
 import FreelancerDetailModal from '../components/FreelancerDetailModal'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
@@ -24,7 +23,6 @@ interface Freelancer {
 export default function FreelancersPage() {
   const [freelancers, setFreelancers] = useState<Freelancer[]>([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
   const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
 
@@ -80,12 +78,6 @@ export default function FreelancersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Freelancers</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Nieuwe Freelancer
-          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -209,13 +201,6 @@ export default function FreelancersPage() {
           </div>
         </div>
       </div>
-
-      {showModal && (
-        <FreelancerModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-        />
-      )}
 
       {showDetailModal && selectedFreelancer && (
         <FreelancerDetailModal
