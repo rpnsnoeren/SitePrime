@@ -1,13 +1,8 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import QuoteModal from './modals/QuoteModal'
-import FreelancerModal from './modals/FreelancerModal'
 
 export default function Navbar() {
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false)
-  const [isFreelancerModalOpen, setIsFreelancerModalOpen] = useState(false)
-
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -56,14 +51,14 @@ export default function Navbar() {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsQuoteModalOpen(true)}
+            <Link
+              href="/offerte"
               className="bg-[#FF6B35] text-white px-6 py-2 rounded-lg hover:bg-[#ff8555] transition-colors"
             >
               Offerte Aanvragen
-            </button>
+            </Link>
             <button
-              onClick={() => setIsFreelancerModalOpen(true)}
+              onClick={() => scrollToSection('freelancers')}
               className="bg-[#FFB400] text-[#1E3D59] px-6 py-2 rounded-lg hover:bg-[#ffc333] transition-colors"
             >
               Word Freelancer
@@ -71,17 +66,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      <QuoteModal 
-        isOpen={isQuoteModalOpen} 
-        onClose={() => setIsQuoteModalOpen(false)} 
-      />
-      
-      <FreelancerModal 
-        isOpen={isFreelancerModalOpen} 
-        onClose={() => setIsFreelancerModalOpen(false)} 
-      />
     </nav>
   )
 } 
